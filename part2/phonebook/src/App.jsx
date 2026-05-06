@@ -3,12 +3,14 @@ import personService from './services/persons.js'
 import Filter from './components/Filter.jsx'
 import PersonForm from './components/PersonForm.jsx'
 import Persons from './components/Persons.jsx'
+import Notification from './components/Notification.jsx'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [notification, setNotification] = useState(null)
 
   const handleNameChange = (e) => {
     setNewName(e.target.value)
@@ -39,13 +41,26 @@ const App = () => {
           setPersons(persons.map(person => person.name === newName ? returnedPerson : person))
           setNewName('')
           setNewNumber('')
-        })
+          setNotification({ message: `Updated ${newName}'s number`, type: 'success' })
+          setTimeout(() => {
+            setNotification(null)
+          }, 5000)
+        }).catch(error => {
+        setNotification({ message: `Information of ${newName} has already been removed from server`, type: 'error' })
+        setTimeout(() => {
+          setNotification(null)
+        }, 5000)
+      })
     }else{
       personService.create({ name: newName, number: newNumber })
         .then(returnedPerson => {
           setPersons([...persons, returnedPerson])
           setNewName('')
           setNewNumber('')
+          setNotification({ message: `Added ${newName}`, type: 'success' })
+          setTimeout(() => {
+            setNotification(null)
+          }, 5000)
         })
     }
   }
@@ -61,6 +76,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification notification={notification} />
       <Filter filter={filter} setFilter={setFilter} />
       <h3>Add a new</h3>
       <PersonForm addPerson={addPerson} newName={newName} newNumber={newNumber} handleNameChange={handleNameChange} handleNumberChange={handleNumberChange} />
